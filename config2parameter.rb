@@ -3,6 +3,8 @@
 require 'fileutils'
 require 'json'
 require 'kconv'
+require 'spreadsheet'
+require 'date'
 
 ########################################
 ### config to json
@@ -27,7 +29,7 @@ f.each_line.with_index do |each,i|
       config[i+1] = "\"#{$1}\"\s:\s#{$2},"
     ### pbject is multiple
     else
-      config[i+1] = "\"#{$1}\"\s:#{$2.gsub(/\"\s\"/,",")},"
+      config[i+1] = "\"#{$1}\"\s:#{$2.gsub(/\"\s\"/,"$")},"
     end
   ### set object(type is choise)
   when /set\s([a-zA-Z0-9\-_]+)\s([a-zA-Z0-9\-_]+)/
@@ -46,12 +48,12 @@ config[config.length] = "}"
 ### }, to }
 config.each.with_index do |each,i|
   if (each == "},") or (each == "}") then
-    config[i-1] = config[i-1].sub(/,/,"")
+    config[i-1] = config[i-1].gsub(/,/,"")
   end
 end
 
 ### test code
-puts config
+#puts config
 
 ########################################
 ### json to paramete
@@ -65,10 +67,40 @@ section = Array.new
 parsed_json['config firewall policy'].keys.each do |each|
   section = section + parsed_json['config firewall policy'][each].keys
 end
-puts "id$srcintf$srcaddr$dstintf$dstaddr$service$schedule$action$nat$log$av$webfilter$spamfilter$ips$application$protocol_profile$status"
 
-parsed_json['config firewall policy'].keys.each do |each|
+workbook = Spreadsheet::Workbook.new
+worksheet = workbook.create_worksheet(:name=>"Paramater")
+
+category = Array[
+  "id",
+  "srcintf",
+  "srcaddr",
+  "dstintf",
+  "dstaddr",
+  "service",
+  "schedule",
+  "action",
+  "nat",
+  "ippool",
+  "log",
+  "av",
+  "webfilter",
+  "spamfilter",
+  "ips",
+  "application",
+  "protocol_profile",
+  "status"
+]
+puts category
+
+category.each.with_index do |each,i|
+  puts each
+  worksheet[0,i] = each
+end
+
+parsed_json['config firewall policy'].keys.each.with_index do |each,line|
   id = each.gsub(/edit\s/,"")
+
   srcintf = parsed_json['config firewall policy'][each]['srcintf']
   srcaddr = parsed_json['config firewall policy'][each]['srcaddr']
   dstintf = parsed_json['config firewall policy'][each]['dstintf']
@@ -82,19 +114,21 @@ parsed_json['config firewall policy'].keys.each do |each|
   else
     status = "ON"
   end
+
   logtraffic = parsed_json['config firewall policy'][each]['logtraffic']
   if logtraffic == "enable" then
     logtraffic = "ON"
   else 
     logtraffic = "OFF"
   end
+
   nat = parsed_json['config firewall policy'][each]['nat']
   ippool = parsed_json['config firewall policy'][each]['ippool']
   poolname = parsed_json['config firewall policy'][each]['poolname']
-
   if ippool == "enable" then
-    nat = poolname
+    ippool = poolname
   end
+
   utm = parsed_json['config firewall policy'][each]['utm-status']
   av = parsed_json['config firewall policy'][each]['av-profile']
   webfilter = parsed_json['config firewall policy'][each]['webfilter-profile']
@@ -103,6 +137,36 @@ parsed_json['config firewall policy'].keys.each do |each|
   application = parsed_json['config firewall policy'][each]['application-list']
   profile_protocol = parsed_json['config firewall policy'][each]['profile-protocol-options']
 
-  policy = "#{id}$#{srcintf}$#{srcaddr}$#{dstintf}$#{dstaddr}$#{service}$#{schedule}$#{action}$#{nat}$#{logtraffic}$#{av}$#{webfilter}$#{spamfilter}$#{ips}$#{application}$#{profile_protocol}$#{status}"
-puts policy
+  policy = Array[
+    id,
+    srcintf,
+    srcaddr,
+    dstintf,
+    dstaddr,
+    service,
+    schedule,
+    action,
+    nat,
+    ippool,
+    logtraffic,
+    av,
+    webfilter,
+    spamfilter,
+    ips,
+    application,
+    profile_protocol,
+    status
+  ]
+
+  policy.each.with_index do |each,row|
+    if each.nil? then
+      each = "-"
+    else
+      each.gsub!(/\$/,"\n")
+    end
+    worksheet[line+1,row] = each
+  end
+
 end
+
+workbook.write("Parameter.xls")
