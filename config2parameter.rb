@@ -83,18 +83,12 @@ category = Array[
   "nat",
   "ippool",
   "log",
-  "av",
-  "webfilter",
-  "spamfilter",
-  "ips",
-  "application",
+  "utm",
   "protocol_profile",
   "status"
 ]
-puts category
 
 category.each.with_index do |each,i|
-  puts each
   worksheet[0,i] = each
 end
 
@@ -135,6 +129,33 @@ parsed_json['config firewall policy'].keys.each.with_index do |each,line|
   spamfilter = parsed_json['config firewall policy'][each]['spamfilter-profile']
   ips = parsed_json['config firewall policy'][each]['ips-sensor']
   application = parsed_json['config firewall policy'][each]['application-list']
+
+  if utm == "enable" then
+    if not av.nil? then
+      utm_profile = "#{utm_profile}AV : #{av}$"
+    end
+
+    if not webfilter.nil? then
+      utm_profile = "#{utm_profile}WEB : #{webfilter}$"
+    end
+
+    if not spamfilter.nil? then
+      utm_profile = "#{utm_profile}SPAN : #{spamfilter}$"
+    end
+
+    if not ips.nil? then
+      utm_profile = "#{utm_profile}IPS : #{ips}$"
+    end
+
+    if not application.nil? then
+      utm_profile = "#{utm_profile}APC : #{application}$"
+    end
+
+    if not utm_profile.nil? then
+      utm_profile.chop!
+    end
+  end
+
   profile_protocol = parsed_json['config firewall policy'][each]['profile-protocol-options']
 
   policy = Array[
@@ -149,11 +170,7 @@ parsed_json['config firewall policy'].keys.each.with_index do |each,line|
     nat,
     ippool,
     logtraffic,
-    av,
-    webfilter,
-    spamfilter,
-    ips,
-    application,
+    utm_profile,
     profile_protocol,
     status
   ]
