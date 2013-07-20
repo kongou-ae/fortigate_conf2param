@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+def conf2param(filename)
+
 require 'fileutils'
 require 'json'
 require 'kconv'
@@ -9,16 +11,16 @@ require 'date'
 ########################################
 ### config to json
 ########################################
-#
+
 config = Array.new
 
 config[0] = "{"
-f = File.open("./config","r")
+f = File.open(filename,"r")
 f.each_line.with_index do |each,i|
 
   case each
   ### config firewall
-  when /(config\sfirewall.+)/,/(config\sidentity-based-policy)/
+  when /(config\sfirewall\spolicy)/,/(config\sidentity-based-policy)/
     config[i+1] = "\"#{$1}\":\s{"
   ### edit number
   when /(edit\s\d+)/
@@ -53,7 +55,8 @@ config.each.with_index do |each,i|
 end
 
 ### test code
-#puts config
+puts "test output"
+puts config
 
 ########################################
 ### json to paramete
@@ -186,4 +189,5 @@ parsed_json['config firewall policy'].keys.each.with_index do |each,line|
 
 end
 
-workbook.write("Parameter.xls")
+workbook.write("./param/Parameter.xls")
+end

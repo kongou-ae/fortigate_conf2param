@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'slim'
 require 'sinatra/content_for'
+require './config2parameter'
 
 set :environment, :production
 
@@ -16,6 +17,7 @@ put '/upload' do
     File.open(save_file,'w') do |f|
       f.write(params[:file][:tempfile].read)
     end
+    conf2param(save_file)
   else
     "Error"
   end
