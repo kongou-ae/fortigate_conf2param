@@ -11,7 +11,6 @@ end
 
 put '/upload' do
   if @input_file = params[:file]
-
     save_file = "./config/" + params[:file][:filename]
     File.open(save_file,'w') do |f|
       f.write(params[:file][:tempfile].read)
