@@ -4,8 +4,8 @@ This script changes a config file of FortiGate into the parameter sheet.
 By using this script, creation of a parameter sheet will become easy. 
 
 
-This script has been tested by using FortiGate-50B(OS4.0 MR3 Patch14).
-This script only support the section of "config firewall policy"
+This script has been tested by using FortiGate-50B(OS4.0 MR3 Patch14).  
+This script only support the section of "config firewall policy".  
 
 Usage
 
