@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'slim'
 require 'sinatra/content_for'
+require './config2parameter'
 
 set :environment, :production
 
@@ -10,15 +11,21 @@ end
 
 put '/upload' do
   if @input_file = params[:file]
-    slim :upload
-
     save_file = "./config/" + params[:file][:filename]
     File.open(save_file,'w') do |f|
       f.write(params[:file][:tempfile].read)
     end
+    @parameter_sheet = conf2param(save_file)
+    #attachment "./param/#{parameter_sheet}"
+    slim :upload    
   else
     "Error"
   end
+end
+
+get '/param/:filename' do |download_file|
+  send_file("./param/#{download_file}")
+
 end
 
 __END__
@@ -34,8 +41,5 @@ html
 @@ upload
 html
   body
-    p = "filename : #{@input_file[:filename]}"
-    p = "type: #{@input_file[:type]}"
-    p = "name: #{@input_file[:name]}"
-    p = "tempfile: #{@input_file[:tempfile]}"
-    p = "head: #{@input_file[:head]}"
+    p = "completed to generate parameter file"
+    a href="./param/#{@parameter_sheet}" title='parameter sheet' Get the parameter sheet!!!
